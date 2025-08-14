@@ -19,11 +19,19 @@ jobs:
       # your project is available for Godot to export
     - name: checkout
       uses: actions/checkout@v4
+
+    - name: Start Xvfb
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y xvfb
+        Xvfb :99 & export DISPLAY=:99
   
     - name: export game
       id: export
       # Use latest version (see releases for all versions)
       uses: firebelley/godot-export@v6.0.0
+      env:
+        DISPLAY: :99
       with:
         # Defining all the required inputs
         godot_executable_download_url: https://github.com/Homebrodot/Godot/releases/download/3.5.3%2Bswitch%2Bvita/linux-editor.zip
