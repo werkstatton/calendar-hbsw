@@ -8,6 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     permissions: write-all
     steps:
+    - uses: actions/checkout@v2
+    - uses: vitorgus/setup-godot@v1
+      with:
+        godot-version: 3.5.2
+
       # Always include the checkout step so that 
       # your project is available for Godot to export
     - name: checkout
@@ -18,12 +23,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y xvfb
         Xvfb :99 & export DISPLAY=:99
-    
-    - name: Build Godot
-    - uses: actions/checkout@v2
-    - uses: vitorgus/setup-godot@v1
-      with:
-        godot-version: 3.3.3
+        
     - name: Web Build
       run: |
         mkdir -v -p build/web
