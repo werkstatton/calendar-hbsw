@@ -1,18 +1,19 @@
+# Whenever a tag push matching pattern "v*" then run the job
 on:
   push:
     branches:
     - hotfix/*
 
 jobs:
-  build:
+  # job id, can be anything
+  export_game:
+    # Always use ubuntu-latest for this action
     runs-on: ubuntu-latest
+    # Add permission for release creation. Can be made narrower according to your needs
     permissions: write-all
+    # Job name, can be anything
+    name: Export Game
     steps:
-    - uses: actions/checkout@v2
-    - uses: vitorgus/setup-godot@v1
-      with:
-        godot-version: 3.5.2
-
       # Always include the checkout step so that 
       # your project is available for Godot to export
     - name: checkout
@@ -23,12 +24,26 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y xvfb
         Xvfb :99 & export DISPLAY=:99
-        
-    - name: Web Build
-      run: |
-        mkdir -v -p build/web
-        godot -v --export "HTML5" ./build/web/index.html
-    - uses: actions/upload-artifact@v2
+  
+    - name: export game
+      id: export
+      # Use latest version (see releases for all versions)
+      uses: firebelley/godot-export@v6.0.0
+      env:
+        DISPLAY: :99
       with:
-        name: web
-        path: build/web
+        # Defining all the required inputs
+        godot_executable_download_url: https://github.com/Homebrodot/Godot/releases/download/3.5.3%2Bswitch%2Bvita/linux-editor.zip
+        godot_export_templates_download_url: https://github.com/godotengine/godot-builds/releases/download/3.5.3-stable/Godot_v3.5.3-stable_export_templates.tpz
+        relative_project_path: ./src
+        archive_output: true
+
+      # This release action has worked well for me. However, you can most likely use any release action of your choosing.
+      # https://github.com/ncipollo/release-action
+    - name: create release
+      uses: ncipollo/release-action@v1.14.0
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        generateReleaseNotes: true
+        tag: ${{ github.ref_name }}
+        artifacts: ${{ steps.export.outputs.archive_directory }}/*
